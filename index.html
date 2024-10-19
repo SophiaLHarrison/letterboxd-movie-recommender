@@ -14,7 +14,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh; /* This is correctly formatted */
+            height: 100vh;
         }
         h1 {
             color: #333;
@@ -48,8 +48,11 @@
         async function getRecommendations() {
             const response = await fetch('letterboxd_movies.csv');
             const text = await response.text();
-            const rows = text.split('\n').slice(1);
-            const movies = rows.map(row => row.split(',')[1].replace(/['"]+/g, ''));
+            const rows = text.split('\n').slice(1).filter(row => row.trim() !== '');  // Filter out any empty rows
+            const movies = rows.map(row => {
+                const columns = row.split(',');
+                return columns[0].replace(/['"]+/g, '');  // Adjust the index based on your CSV structure
+            }).filter(movie => movie);  // Filter out any empty movie titles
             const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
             const movieList = document.getElementById('movieList');
             movieList.innerHTML = '';
