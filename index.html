@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* This is correctly formatted */
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .movie-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .movie-list li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Movie Recommender</h1>
+    <button onclick="getRecommendations()">Get Movie Recommendations</button>
+    <ul class="movie-list" id="movieList"></ul>
+
+    <script>
+        async function getRecommendations() {
+            const response = await fetch('letterboxd_movies.csv');
+            const text = await response.text();
+            const rows = text.split('\n').slice(1);
+            const movies = rows.map(row => row.split(',')[1].replace(/['"]+/g, ''));
+            const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
+            const movieList = document.getElementById('movieList');
+            movieList.innerHTML = '';
+            randomMovies.forEach(movie => {
+                const li = document.createElement('li');
+                li.textContent = movie;
+                movieList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
