@@ -45,22 +45,28 @@
     <ul class="movie-list" id="movieList"></ul>
 
     <script>
-        async function getRecommendations() {
-            const response = await fetch('letterboxd_movies.csv');
-            const text = await response.text();
-            const rows = text.split('\n').slice(1).filter(row => row.trim() !== '');  // Filter out any empty rows
-            const movies = rows.map(row => {
-                const columns = row.split(',');
-                return columns[0].replace(/['"]+/g, '');  // Adjust the index based on your CSV structure
-            }).filter(movie => movie);  // Filter out any empty movie titles
-            const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
-            const movieList = document.getElementById('movieList');
-            movieList.innerHTML = '';
-            randomMovies.forEach(movie => {
-                const li = document.createElement('li');
-                li.textContent = movie;
-                movieList.appendChild(li);
-            });
+        function getRecommendations() {
+            try {
+                console.log('Generating sample data...');
+                const movies = ["The Godfather", "GoodFellas", "Citizen Kane", "Seven Samurai", "The Godfather Part II", "Pulp Fiction", "The Dark Knight"];
+                console.log('Sample Movies:', movies);
+
+                console.log('Selecting 4 random movies...');
+                const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
+                console.log('Random Movies:', randomMovies);
+
+                console.log('Updating the HTML...');
+                const movieList = document.getElementById('movieList');
+                movieList.innerHTML = '';
+                randomMovies.forEach(movie => {
+                    const li = document.createElement('li');
+                    li.textContent = movie;
+                    movieList.appendChild(li);
+                });
+                console.log('HTML updated with random movies.');
+            } catch (error) {
+                console.error('Error generating random movies:', error);
+            }
         }
     </script>
 </body>
