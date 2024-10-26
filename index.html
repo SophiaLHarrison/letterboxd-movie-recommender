@@ -37,59 +37,73 @@
         .movie-list li {
             margin: 5px 0;
         }
+        .title-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <h1>Welcome to the Movie Recommender</h1>
-	<h2>from the top 225 rated films on Letterboxd</h2>
-    <button onclick="getRecommendations()">Get Movie Recommendations </button>
+    <button onclick="getRecommendations()">Get Movie Recommendations</button>
     <ul class="movie-list" id="movieList"></ul>
+    <button onclick="removeTwo()" id="removeTwoButton" style="display:none;">Remove Two</button>
+    <button onclick="removeOne()" style="display:none;" id="removeOneButton">Remove One</button>
 
     <script>
+        let movies = [];
+        
         async function getRecommendations() {
-            try {
-                console.log('Fetching the CSV file...');
-                const response = await fetch('letterboxd_movies.csv');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                console.log('CSV file fetched successfully.');
+            const response = await fetch('letterboxd_movies.csv');
+            const text = await response.text();
+            const rows = text.split('\n').slice(1).filter(row => row.trim() !== '');
+            movies = rows.map(row => {
+                const columns = row.split(',');
+                return {
+                    rank: columns[0].trim(),
+                    title: columns[1].replace(/['"]+/g, '').trim(),
+                    year: columns[2].trim(),
+                    poster: columns[3].trim()
+                };
+            }).filter(movie => movie.title);
+            const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
+            displayMovies(randomMovies);
+        }
 
-                console.log('Reading CSV content...');
-                const text = await response.text();
-                console.log('CSV Content:', text);
+        function displayMovies(movieArray) {
+            const movieList = document.getElementById('movieList');
+            movieList.innerHTML = '';
+            movieArray.forEach(movie => {
+                const li = document.createElement('li');
+                li.className = 'movie-item';
+                li.innerHTML = `
+                    <div class="title-cell">
+                        <img src="${movie.poster}" alt="Poster" style="width:100px;">
+                        ${movie.rank}. ${movie.title} (${movie.year})
+                    </div>
+                `;
+                movieList.appendChild(li);
+            });
+            document.getElementById('removeTwoButton').style.display = 'block';
+            document.getElementById('removeOneButton').style.display = 'none';
+        }
 
-                console.log('Parsing CSV rows...');
-                const rows = text.split('\n').slice(1).filter(row => row.trim() !== '');
-                console.log('Parsed Rows:', rows);
+        function removeTwo() {
+            let movieItems = document.querySelectorAll('.movie-item');
+            movieItems = Array.from(movieItems);
+            const toRemove = movieItems.sort(() => 0.5 - Math.random()).slice(0, 2);
+            toRemove.forEach(item => item.remove());
+            document.getElementById('removeTwoButton').style.display = 'none';
+            document.getElementById('removeOneButton').style.display = 'block';
+        }
 
-                console.log('Extracting movie titles and ranks...');
-                const movies = rows.map(row => {
-                    const columns = row.split(',');
-                    console.log('Parsed Row:', columns);
-                    return {
-                        rank: columns[0].trim(),  // Adjust based on CSV structure
-                        title: columns[1].replace(/['"]+/g, '').trim()  // Adjust based on CSV structure
-                    };
-                }).filter(movie => movie.title);
-                console.log('Movies:', movies);
-
-                console.log('Selecting 4 random movies...');
-                const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
-                console.log('Random Movies:', randomMovies);
-
-                console.log('Updating the HTML...');
-                const movieList = document.getElementById('movieList');
-                movieList.innerHTML = '';
-                randomMovies.forEach(movie => {
-                    const li = document.createElement('li');
-                    li.textContent = `${movie.rank}. ${movie.title}`;
-                    movieList.appendChild(li);
-                });
-                console.log('HTML updated with random movies.');
-            } catch (error) {
-                console.error('Error fetching or parsing CSV:', error);
-            }
+        function removeOne() {
+            let movieItems = document.querySelectorAll('.movie-item');
+            movieItems = Array.from(movieItems);
+            const chosenOne = movieItems.sort(() => 0.5 - Math.random()).slice(0, 1);
+            movieItems.forEach(item => item.remove());
+            displayMovies(chosenOne);
         }
     </script>
 </body>
