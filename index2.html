@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .movie-list {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        .movie-item {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .title-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title-cell img {
+            width: 100px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Movie Recommender</h1>
+    <button onclick="getRecommendations()">Get Movie Recommendations</button>
+    <ul class="movie-list" id="movieList"></ul>
+    <button onclick="removeTwo()" id="removeTwoButton" style="display:none;">Remove Two</button>
+    <button onclick="removeOne()" id="removeOneButton" style="display:none;">Remove One</button>
+
+    <script>
+        let movies = [];
+        
+        async function getRecommendations() {
+            const response = await fetch('letterboxd_movies.csv');
+            const text = await response.text();
+            const rows = text.split('\n').slice(1).filter(row => row.trim() !== '');
+            movies = rows.map(row => {
+                const columns = row.split(',');
+                return {
+                    rank: columns[0].trim(),
+                    title: columns[1].replace(/['"]+/g, '').trim(),
+                    year: columns[2].trim(),
+                    poster: columns[3].trim()
+                };
+            }).filter(movie => movie.title);
+            const randomMovies = movies.sort(() => 0.5 - Math.random()).slice(0, 4);
+            displayMovies(randomMovies);
+        }
+
+        function displayMovies(movieArray) {
+            const movieList = document.getElementById('movieList');
+            movieList.innerHTML = '';
+            movieArray.forEach(movie => {
+                const li = document.createElement('li');
+                li.className = 'movie-item';
+                li.innerHTML = `
+                    <div class="title-cell">
+                        <img src="${movie.poster}" alt="Poster" style="width:100px;">
+                        ${movie.rank}. ${movie.title} (${movie.year})
+                    </div>
+                `;
+                movieList.appendChild(li);
+            });
+            document.getElementById('removeTwoButton').style.display = 'block';
+            document.getElementById('removeOneButton').style.display = 'none';
+        }
+
+        function removeTwo() {
+            let movieItems = document.querySelectorAll('.movie-item');
+            movieItems = Array.from(movieItems);
+            const toRemove = movieItems.sort(() => 0.5 - Math.random()).slice(0, 2);
+            toRemove.forEach(item => item.remove());
+            document.getElementById('removeTwoButton').style.display = 'none';
+            document.getElementById('removeOneButton').style.display = 'block';
+        }
+
+        function removeOne() {
+            let movieItems = document.querySelectorAll('.movie-item');
+            movieItems = Array.from(movieItems);
+            const chosenOne = movieItems.sort(() => 0.5 - Math.random()).slice(0, 1);
+            movieItems.forEach(item => item.remove());
+            displayMovies(chosenOne);
+        }
+    </script>
+</body>
+</html>
